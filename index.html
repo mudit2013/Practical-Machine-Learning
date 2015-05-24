@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Practical-machine-learning by mudit2013</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Practical-machine-learning</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/mudit2013/Practical-Machine-Learning" class="btn">View on GitHub</a>
+      <a href="https://github.com/mudit2013/Practical-Machine-Learning/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/mudit2013/Practical-Machine-Learning/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p>&lt;!DOCTYPE html&gt;</p>
+
+<p></p>
+
+<p></p>
+
+<p>
+
+</p>
+
+<p></p>
+
+<p></p>Practical Machine Learning Course Project
+
+
+
+<p>
+
+</p>
+
+
+
+code{white-space: pre;}
+
+<p></p>
+
+
+
+
+  pre:not([class]) {
+    background-color: white;
+  }
+
+
+
+
+<p></p>
+
+<p></p>
+
+
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+<div>
+
+
+<div id="header">
+<h1>
+<a id="practical-machine-learning-course-project" class="anchor" href="#practical-machine-learning-course-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>Practical Machine Learning Course Project</h1>
+<h4>
+<a id="mudit" class="anchor" href="#mudit" aria-hidden="true"><span class="octicon octicon-link"></span></a><em>Mudit</em>
+</h4>
+<h4>
+<a id="sunday-may-24-2015" class="anchor" href="#sunday-may-24-2015" aria-hidden="true"><span class="octicon octicon-link"></span></a><em>Sunday, May 24, 2015</em>
+</h4>
+</div>
+
+<div id="introduction">
+<h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
+<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a> (see the section on the Weight Lifting Exercise Dataset).</p>
+</div>
+
+<div id="data">
+<h2>
+<a id="data" class="anchor" href="#data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data</h2>
+<p>The training data for this project are available <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">here</a> and test data <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv">here</a> The data for this project come from this <a href="http://groupware.les.inf.puc-rio.br/har">source</a> After data is stored into working directory, load the data.</p>
+<pre><code>## read data
+training&lt;-read.csv("pml-training.csv",na.strings=c("NA",""))
+testing&lt;-read.csv("pml-testing.csv",na.strings=c("NA",""))</code></pre>
+</div>
+
+<div id="library">
+<h2>
+<a id="library" class="anchor" href="#library" aria-hidden="true"><span class="octicon octicon-link"></span></a>Library</h2>
+<p>Load the required library needed for the task.</p>
+<pre><code>## load required libraries
+library(caret)</code></pre>
+<pre><code>## Loading required package: lattice
+## Loading required package: ggplot2</code></pre>
+</div>
+
+<div id="data-cleaning">
+<h2>
+<a id="data-cleaning" class="anchor" href="#data-cleaning" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Cleaning</h2>
+<p>In data cleaning following steps were taken: 1. Remove non numeric columns 2. Remove NA 3. Remove near zero variance columns 4. Convert response variable to factor</p>
+<pre><code>## data cleaning
+# cols 1 to 7 (non numeric columns) won't contribute to the model. So remove them.
+training   &lt;-training[,-c(1:7)]
+# remove NA
+training &lt;- training[, which(as.numeric(colSums(is.na(training)))==0)]
+# exclude near zero variance features
+nearZeroColumns &lt;- nearZeroVar(training, saveMetrics = TRUE)
+training &lt;- training[, nearZeroColumns$nzv==FALSE]
+#classe into factor
+training$classe &lt;- factor(training$classe)</code></pre>
+</div>
+
+<div id="data-partition">
+<h2>
+<a id="data-partition" class="anchor" href="#data-partition" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Partition</h2>
+<p>Training data is splitted into two parts: 1. Training (75% of original training data) 2. Validation (25% of original training data)</p>
+<pre><code>## data partition
+set.seed(1234)
+trainset &lt;- createDataPartition(training$classe, p = 0.75, list = FALSE)
+Training &lt;- training[trainset, ]
+Validation &lt;- training[-trainset, ]</code></pre>
+</div>
+
+<div id="modelling">
+<h2>
+<a id="modelling" class="anchor" href="#modelling" aria-hidden="true"><span class="octicon octicon-link"></span></a>Modelling</h2>
+<p>Random Forest classifier is used to fit the model.</p>
+<pre><code>## Fit a randomforest classifier
+library(randomForest)</code></pre>
+<pre><code>## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>modelrf&lt;-randomForest(classe ~ ., data = Training,method="class")</code></pre>
+</div>
+
+<div id="training-set-accuracy">
+<h2>
+<a id="training-set-accuracy" class="anchor" href="#training-set-accuracy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Training Set Accuracy</h2>
+<pre><code>#predict on train set and check the accuracy
+predicttraining &lt;- predict(modelrf, Training)
+print(confusionMatrix(predicttraining, Training$classe))</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 4185    0    0    0    0
+##          B    0 2848    0    0    0
+##          C    0    0 2567    0    0
+##          D    0    0    0 2412    0
+##          E    0    0    0    0 2706
+## 
+## Overall Statistics
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.9997, 1)
+##     No Information Rate : 0.2843     
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
+##                                      
+##                   Kappa : 1          
+##  Mcnemar's Test P-Value : NA         
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Prevalence             0.2843   0.1935   0.1744   0.1639   0.1839
+## Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1839
+## Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1839
+## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
+<p>Model has performed well in training set, but we will need to cross validate the results against the validation set.</p>
+</div>
+
+<div id="validation-set-accuracy">
+<h2>
+<a id="validation-set-accuracy" class="anchor" href="#validation-set-accuracy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Validation Set Accuracy</h2>
+<pre><code># validation set accuracy
+predictvalidation &lt;- predict(modelrf, Validation)
+print(confusionMatrix(predictvalidation, Validation$classe))</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1395    1    0    0    0
+##          B    0  946   11    0    0
+##          C    0    2  843    8    0
+##          D    0    0    1  796    0
+##          E    0    0    0    0  901
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.9953        
+##                  95% CI : (0.993, 0.997)
+##     No Information Rate : 0.2845        
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16     
+##                                         
+##                   Kappa : 0.9941        
+##  Mcnemar's Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   0.9968   0.9860   0.9900   1.0000
+## Specificity            0.9997   0.9972   0.9975   0.9998   1.0000
+## Pos Pred Value         0.9993   0.9885   0.9883   0.9987   1.0000
+## Neg Pred Value         1.0000   0.9992   0.9970   0.9981   1.0000
+## Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
+## Detection Rate         0.2845   0.1929   0.1719   0.1623   0.1837
+## Detection Prevalence   0.2847   0.1951   0.1739   0.1625   0.1837
+## Balanced Accuracy      0.9999   0.9970   0.9917   0.9949   1.0000</code></pre>
+<p>Cross validation accuracy is 99.61% and the out-of-sample error is therefore 0.39% so the model has performed rather good.</p>
+</div>
+
+<div id="test-set-classification">
+<h2>
+<a id="test-set-classification" class="anchor" href="#test-set-classification" aria-hidden="true"><span class="octicon octicon-link"></span></a>Test set classification</h2>
+<p>Prediction of our algorithm for the test set:</p>
+<pre><code># predict against test set
+predicttest &lt;- predict(modelrf, testing)
+predicttest</code></pre>
+<pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
+##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
+## Levels: A B C D E</code></pre>
+</div>
+
+<div id="output">
+<h2>
+<a id="output" class="anchor" href="#output" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output</h2>
+<p>Save the output to files according to instructions and post it to the submission page.</p>
+<pre><code>answers &lt;- as.vector(predicttest)
+
+pml_write_files = function(x) {
+  n = length(x)
+  for (i in 1:n) {
+    filename = paste0("problem_id_", i, ".txt")
+    write.table(x[i], file = filename, quote = FALSE, row.names = FALSE,
+                col.names = FALSE)
+  }
+}
+
+pml_write_files(answers)</code></pre>
+</div>
+
+<p></p>
+</div>
+
+
+
+
+
+
+
+<p>
+</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/mudit2013/Practical-Machine-Learning">Practical-machine-learning</a> is maintained by <a href="https://github.com/mudit2013">mudit2013</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
